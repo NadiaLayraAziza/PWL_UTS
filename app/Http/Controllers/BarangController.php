@@ -18,7 +18,7 @@ class BarangController extends Controller
             $barangs = Barang::where('kode_barang', 'like', "%".$request->search."%")
             ->orwhere('nama_barang', 'like', "%".$request->search."%")
             ->orwhere('kategori_barang', 'like', "%".$request->search."%")
-            ->paginate(5);
+            ->paginate();
         } else { // Pemilihan jika tidak melakukan pencarian
             //fungsi eloquent menampilkan data menggunakan pagination
             $barangs = Barang::paginate(5); // Pagination menampilkan 5 data
