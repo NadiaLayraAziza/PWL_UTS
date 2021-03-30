@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Barang;
 use Illuminate\Http\Request;
 
 class BarangController extends Controller
@@ -11,9 +12,18 @@ class BarangController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        //
+        if($request->has('search')){ // Pemilihan jika ingin melakukan pencarian
+            $barangs = Barang::where('kode_barang', 'like', "%".$request->search."%")
+            ->orwhere('nama_barang', 'like', "%".$request->search."%")
+            ->orwhere('kategori_barang', 'like', "%".$request->search."%")
+            ->paginate(5);
+        } else { // Pemilihan jika tidak melakukan pencarian
+            //fungsi eloquent menampilkan data menggunakan pagination
+            $barangs = Barang::paginate(5); // Pagination menampilkan 5 data
+        }
+        return view('tampil.index', compact('barangs'));
     }
 
     /**
@@ -23,7 +33,7 @@ class BarangController extends Controller
      */
     public function create()
     {
-        //
+        return view('tampil.create');
     }
 
     /**
@@ -34,7 +44,21 @@ class BarangController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        //melakukan validasi data
+        $request->validate([
+            'kode_barang' => 'required',
+            'nama_barang' => 'required',
+            'kategori_barang' => 'required',
+            'harga' => 'required',
+            'qty' => 'required',
+            ]);
+
+            //fungsi eloquent untuk menambah data
+            Barang::create($request->all());
+
+            //jika data berhasil ditambahkan, akan kembali ke halaman utama
+            return redirect()->route('barang.index')
+                ->with('success', 'Data Barang Berhasil Ditambahkan');
     }
 
     /**
@@ -43,9 +67,11 @@ class BarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function show($id_barang)
     {
-        //
+        //menampilkan detail data dengan menemukan/berdasarkan kode barang
+        $Barang = Barang::find($id_barang);
+        return view('tampil.detail', compact('Barang'));
     }
 
     /**
@@ -54,9 +80,11 @@ class BarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit($id_barang)
     {
-        //
+        //menampilkan detail data dengan menemukan berdasarkan kode barang untuk diedit
+        $Barang = Barang::find($id_barang);
+        return view('tampil.edit', compact('Barang'));
     }
 
     /**
@@ -66,9 +94,24 @@ class BarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, $id_barang)
     {
-        //
+        //melakukan validasi data
+        $request->validate([
+            'id_barang' => 'required',
+            'kode_barang' => 'required',
+            'nama_barang' => 'required',
+            'kategori_barang' => 'required',
+            'harga' => 'required',
+            'qty' => 'required',
+            ]);
+
+        //fungsi eloquent untuk mengupdate data inputan kita
+            Barang::find($id_barang)->update($request->all());
+
+        //jika data berhasil diupdate, akan kembali ke halaman utama
+            return redirect()->route('barang.index')
+                ->with('success', 'Data Barang Berhasil Diupdate');
     }
 
     /**
@@ -77,8 +120,11 @@ class BarangController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy($id_barang)
     {
-        //
+        //fungsi eloquent untuk menghapus data
+        Barang::find($id_barang)->delete();
+        return redirect()->route('barang.index')
+            -> with('success', 'Data Barang Berhasil Dihapus');
     }
 }
